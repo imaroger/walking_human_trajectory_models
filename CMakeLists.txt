@@ -146,8 +146,8 @@ add_library(crocoddyl /local/imaroger/crocoddyl/src/core/actions/human.cpp
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/to_table_node.cpp)
 
-add_executable(ControlOptimalModel ControlOptimalModel.cpp)
-target_link_libraries(ControlOptimalModel ${catkin_LIBRARIES} crocoddyl)
+add_executable(OptimalControlModel OptimalControlModel.cpp)
+target_link_libraries(OptimalControlModel ${catkin_LIBRARIES} crocoddyl)
 
 add_executable(Clothoid Clothoid.cpp GeneralizedFresnel.cpp)
 

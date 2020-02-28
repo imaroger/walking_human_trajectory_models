@@ -1,10 +1,10 @@
-#include "OptControl.h"
+#include "OptimalControlModel.h"
 #include <fstream>
 
 using namespace std;
 using namespace crocoddyl;
 
-OptControl::OptControl(double x0, double y0, double theta0, 
+OptimalControlModel::OptimalControlModel(double x0, double y0, double theta0, 
 		double xf, double yf, double thetaf, Eigen::VectorXd costs,double a)
 {
 	final_state << xf,yf,thetaf;
@@ -22,7 +22,7 @@ OptControl::OptControl(double x0, double y0, double theta0,
 	T_guess = distance*100/alpha;
 }
 
-void OptControl::optimizeT(boost::shared_ptr<ActionModelAbstract> model_ptr)
+void OptimalControlModel::optimizeT(boost::shared_ptr<ActionModelAbstract> model_ptr)
 {
 	vector<boost::shared_ptr<ActionModelAbstract>> running_models;
 
@@ -65,7 +65,7 @@ void OptControl::optimizeT(boost::shared_ptr<ActionModelAbstract> model_ptr)
 	}
 }
 
-void OptControl::solve()
+void OptimalControlModel::solve()
 {
 	model.set_cost_weights(cost_weights);
 	model.set_final_state(final_state_translated);	
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 	Eigen::VectorXd cost_weights = Eigen::VectorXd(7);
 	cost_weights << 1., 1.2, 1.7, 0.7, 5.2, 5. , 8.;
 	double alpha = 0.1;
-	OptControl co(-0.32,1.51,0.,1.6,1.74,0.26,cost_weights,alpha);
+	OptimalControlModel co(-0.32,1.51,0.,1.6,1.74,0.26,cost_weights,alpha);
 
 	clock_t t;
 	t = clock();
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
 	cout << co.x[0] << " | " << co.y[0] << " | " << co.theta[0]  << endl;
 	cout << co.x[co.x.size()-1] << " | " << co.y[co.y.size()-1] << " | " << co.theta[co.theta.size()-1]  << endl;
 
-	string filename_x = "/local/imaroger/catkin_ws/src/trajectory_generation/data/OptCOntrol/x.dat";
+	string filename_x = "/local/imaroger/catkin_ws/src/trajectory_generation/data/OptControl/x.dat";
 	string filename_y = "/local/imaroger/catkin_ws/src/trajectory_generation/data/OptControl/y.dat";
 	string filename_th = "/local/imaroger/catkin_ws/src/trajectory_generation/data/OptControl/theta.dat";
 	

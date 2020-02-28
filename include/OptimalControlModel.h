@@ -1,5 +1,5 @@
-#ifndef CONTROLOPTIMALMODEL_H 
-#define CONTROLOPTIMALMODEL_H 
+#ifndef OPTIMALCONTROLMODEL_H 
+#define OPTIMALCONTROLMODEL_H 
 
 #include "crocoddyl/core/actions/human.hpp"
 #include "crocoddyl/core/optctrl/shooting.hpp"
@@ -10,7 +10,7 @@
 using namespace std;
 using namespace crocoddyl;
 
-class ControlOptimalModel
+class OptimalControlModel
 {
 private :
 
@@ -32,7 +32,7 @@ public :
 	vector<double> y;
 	vector<double> theta;	
 
-	ControlOptimalModel(double x0, double y0, double theta0, 
+	OptimalControlModel(double x0, double y0, double theta0, 
 		double xf, double yf, double thetaf,
 		Eigen::VectorXd costs,double a);
 
