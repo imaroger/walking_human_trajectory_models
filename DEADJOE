@@ -1,0 +1,29 @@
+
+*** These modified files were found in JOE when it aborted on Fri Feb 28 10:17:49 2020
+*** JOE was aborted because the terminal closed
+
+*** Fichier '/local/imaroger/walking_human_trajectory_models/.git/MERGE_MSG'
+ branch 'master' of https://github.com/imaroger/walking_human_trajectory_models
+
+# Veuillez entrer un message de validation pour expliquer en quoi cette fusion est
+# nécessaire, surtout si cela fusionne une branche amont mise à jour dans une branche de sujet.
+#
+# Les lignes commençant par '#' seront ignorées, et un message vide
+# abandonne la validation.
+
+*** Fichier '(Sans nom)'
+Dockerfile
+Dockerfile
+Dockerfile
+Dockerfile
+build
+Dockerfile
+Dockerfile
+Dockerfile
+Dockerfile
+Dockerfile
+/local/imaroger/walking_human_trajectory_models/.git/MERGE_MSG
+
+*** Fichier '* Startup Log *'
+Traitement de '/etc/joe/editorrc'...Traitement de '/etc/joe/ftyperc'...Finished processing /etc/joe/ftyperc
+Finished processing /etc/joe/editorrc
