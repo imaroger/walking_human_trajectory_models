@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pylab as plt
 import crocoddyl
-from math import pi, floor, sqrt, cos, sin
+from math import pi, floor, sqrt, cos, sin, atan2
 from scipy.optimize import minimize
 from scipy.interpolate import splprep, splev
 import time
@@ -135,7 +135,8 @@ def distanceBetweenCurvs(path_human,path_ddp):
 	for i in range (len(path_human)):
 		# print(i,path_human_list[i],path_ddp_list[i])
 		human_data = np.loadtxt(path_human_list[i])
-		x_real, y_real, th_real = human_data[0],human_data[1],human_data[5]
+		# x_real, y_real, th_real = human_data[0],human_data[1],human_data[5] # th_global
+		x_real, y_real, th_real = human_data[0],human_data[1],human_data[4] # th_local		
 		ddp_data = np.transpose(np.loadtxt(path_ddp_list[i]))
 		x_sim, y_sim, th_sim = ddp_data[0], ddp_data[1], ddp_data[2]
 		distance_lin = 0
@@ -146,8 +147,17 @@ def distanceBetweenCurvs(path_human,path_ddp):
 		y_sim = y_sim[okay]
 		tck, u = splprep([x_sim, y_sim], s=0)
 		length = len(x_real)
+		# print(length)
 		unew = np.linspace(0,1,length)
 		data_sim = splev(unew, tck)
+
+		okay = np.where(np.abs(np.diff(x_real)) + np.abs(np.diff(y_real)) > 0)
+		x_real = x_real[okay]
+		y_real = y_real[okay]
+		tck, u = splprep([x_real, y_real], s=0)
+		unew = np.linspace(0,1,length)
+		data_real = splev(unew, tck)		
+		x_real,y_real = data_real[0],data_real[1]
 
 		for i in range (length):
 			distance_lin += np.sqrt((data_sim[0][i]-x_real[i])**2+(data_sim[1][i]-y_real[i])**2)	
@@ -163,12 +173,23 @@ def distanceBetweenCurvs(path_human,path_ddp):
 
 		th_sim = np.interp(np.arange(0,length,1),np.linspace(0,length,len(th_sim)),th_sim)
 		
-		for i in range (len(th_real)):
-			distance_ang += abs(normalizeAngle(th_real[i])-normalizeAngle(th_sim[i]))
-		
+		# 	delta_y = np.diff(y)
+		# delta_x = np.diff(x)	
+		# th_local = []
+		# for i in range (len(delta_x)):
+		# phi = atan2(delta_y[i],delta_x[i])
+
+		# th_local.append(phi-theta[i])
+
+		for i in range (len(th_real)-1):
+			phi = atan2(data_sim[1][i+1]-data_sim[1][i],data_sim[0][i+1]-data_sim[0][i])
+			th_local = phi - th_sim[i]
+			# distance_ang += abs(normalizeAngle(th_real[i])-normalizeAngle(th_sim[i]))
+			distance_ang += abs(th_real[i]-th_local)
+
 		# print("dist_i :",distance_lin/length,len(okay[0]),distance_ang/len(th_real))
 		global_dist += (distance_lin/length)
-		global_dist_ang += (distance_ang/len(th_real)/2)
+		global_dist_ang += (distance_ang/(len(th_real)-1)/2)
 
 	print ("final distance :",(global_dist)/len(path_human),(global_dist_ang)/len(path_human))
 	print("------- End of Compute distance -------")
@@ -246,17 +267,18 @@ for pos in init_pos_list:
 # ioc([  2.64997930e+00,   3.99903860e+00,   2.00001029e+01,\
 #          2.89987185e-07,   1.00000000e+01,   1.00000025e+01,\
 #          9.99999967e+00,   3.81925153e-01,   1.37999995e+00]) # results for d_xy
-ioc([  7.87606800e+00,   4.00000040e+00,   2.01459046e+01,\
-         2.90000000e-07,   1.00001619e+01,   9.99999958e+00,\
-         9.99999873e+00,   3.80019473e-01,   3.36999977e+00]) # results for d_xy + 1/2 d_theta
-
+# ioc([  7.87,   4.13,   20.146,\
+#          1e-06,   10.,   9.99,\
+#          9.99,   3.80e-01,   3.36]) # results for d_xy + 1/2 d_theta
+ioc([  7.86951486e+00,   4.00027971e+00,   2.01459991e+01,\
+         1.00000000e-06,   9.99999967e+00,   9.98999939e+00,\
+         9.98999934e+00,   3.79999984e-01,   3.35999389e+00])
 
 # distanceBetweenCurvs(path_human_list, path_ddp_list)
 
-# wt0 = [2.64,   4.,   20.,\
-#          2.9e-07,   10.,  10.0,\
-#          10.,   0.38,   1.37]
-
+# wt0 = [  7.87,   4.,   20.146,\
+#          1e-06,   10.,   9.99,\
+#          9.99,   3.80e-01,   3.36]
 # optimal_wt = minimize(ioc, wt0, method='Powell')
 # print(optimal_wt)
 

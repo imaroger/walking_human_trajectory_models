@@ -25,8 +25,10 @@ print(distances)
 print("-------------------------------------------------------------------")
 
 print("mean dist human :",np.mean(dist_human),"std dist human :",np.std(dist_human))
-print("mean angular dist human :",np.mean(angular_dist_human),"std dist human :",np.std(angular_dist_human))
-print("max linear dist human :",np.max(dist_human),"max angular dist human :",np.max(angular_dist_human))
+
+ind_human = np.where(angular_dist_human != 0)
+print("mean angular dist human :",np.mean(angular_dist_human[ind_human]),"std dist human :",np.std(angular_dist_human[ind_human]))
+print("max linear dist human :",np.max(dist_human),"max angular dist human :",np.max(angular_dist_human[ind_human]))
 
 print("-------------------------------------------------------------------")
 
@@ -56,30 +58,31 @@ print("mean angular dist OC (0):", np.mean([angular_dist_ddp[i] for i in range(1
 print("mean angular dist OC (-pi/2):", np.mean([angular_dist_ddp[i] for i in range(2,len(angular_dist_ddp)+2-3,4)]))
 
 ang_ddp = np.array([angular_dist_ddp[i] for i in range(3,len(angular_dist_ddp)+3-3,4)])
-ind =  np.where(ang_ddp != 0)
+ind_pi =  np.where(ang_ddp != 0)
 
-print("mean angular dist OC (pi):", np.mean(ang_ddp[ind]))
+print("mean angular dist OC (pi):", np.mean(ang_ddp[ind_pi]))
 
 print("-------------------------------------------------------------------")
 
 KS_test_lin = stats.kstest(dist_ddp,'norm', args=(np.mean(dist_ddp), np.std(dist_ddp)))
-KS_test_ang = stats.kstest(angular_dist_ddp[ind],'norm', args=(np.mean(angular_dist_ddp), np.std(angular_dist_ddp)))
+KS_test_ang = stats.kstest(angular_dist_ddp[ind],'norm', args=(np.mean(angular_dist_ddp[ind]), np.std(angular_dist_ddp[ind])))
 
 print('Kolmogorov-Smirnov test - Not normal if p < 0.05')
 print("p for linear dist: ",KS_test_lin)
 print("p for angular dist: ",KS_test_ang)
 
 KS_test_human = stats.kstest(dist_human,'norm', args=(np.mean(dist_human), np.std(dist_human)))
+KS_test_ang_human = stats.kstest(angular_dist_human[ind_human],'norm', args=(np.mean(angular_dist_human[ind_human]), np.std(angular_dist_human[ind_human])))
 
 print("p for human dist: ",KS_test_human)
+print("p for angular human dist: ",KS_test_ang_human)
 
-anova_human_ddp = stats.f_oneway(dist_human,dist_ddp)
-
-student_human_ddp = stats.ttest_ind(dist_human,dist_ddp) ;
+MW_human_ddp = stats.mannwhitneyu(dist_human,dist_ddp) 
+MW_human_ddp_ang = stats.mannwhitneyu(angular_dist_human[ind_human],angular_dist_ddp[ind]) 
 
 print('Significant difference if p < 0.05 - Simu/Mes')
-print("ANOVA test, p : ",anova_human_ddp)
-print("STUDENT test, p : ",student_human_ddp)
+print("Mann-Whitney test, p:",MW_human_ddp)
+print("Mann-Whitney test (angular), p:",MW_human_ddp_ang)
 
 # PLOT dist/dist ######################################################################
 print("-------------------------------------------------------------------")
@@ -151,10 +154,12 @@ for i in range (0,40,4):
 	for j in range (4):
 		if distances[i/4] > 3:
 			dist_ddp_sup.append(dist_ddp[i+j])
-			dist_ang_ddp_sup.append(angular_dist_ddp[i+j])
+			if angular_dist_ddp[i+j] != 0:
+				dist_ang_ddp_sup.append(angular_dist_ddp[i+j])
 		else:
 			dist_ddp_inf.append(dist_ddp[i+j])
-			dist_ang_ddp_inf.append(angular_dist_ddp[i+j])
+			if angular_dist_ddp[i+j] != 0:
+				dist_ang_ddp_inf.append(angular_dist_ddp[i+j])
 
 anova_dist = stats.f_oneway(dist_ddp_inf,dist_ddp_sup)
 anova_dist_ang = stats.f_oneway(dist_ang_ddp_inf,dist_ang_ddp_sup)
@@ -181,70 +186,108 @@ for i in range (0,40):
 	for j in range (10):
 		dist_human_sub[j][i] = dist_human[j+10*i]
 		angular_dist_human_sub[j][i] = angular_dist_human[j+10*i]
-		
-anova_dist = stats.f_oneway(dist_human_sub[0],dist_human_sub[1],dist_human_sub[2],\
+
+# anova_dist = stats.f_oneway(dist_human_sub[0],dist_human_sub[1],dist_human_sub[2],\
+# 	dist_human_sub[3],dist_human_sub[4],dist_human_sub[5],dist_human_sub[6],\
+# 	dist_human_sub[7],dist_human_sub[8],dist_human_sub[9])
+# anova_dist_ang = stats.f_oneway(angular_dist_human_sub[0],angular_dist_human_sub[1],angular_dist_human_sub[2],\
+# 	angular_dist_human_sub[3],angular_dist_human_sub[4],angular_dist_human_sub[5],angular_dist_human_sub[6],\
+# 	angular_dist_human_sub[7],angular_dist_human_sub[8],angular_dist_human_sub[9])
+
+# print('ANOVA test - Significant difference if p < 0.05 - Subjects/Human')
+# print("p for linear dist: ",anova_dist)
+# print("p for angular dist: ",anova_dist_ang)
+
+kruskal_dist = stats.kruskal(dist_ddp,dist_human_sub[2],\
 	dist_human_sub[3],dist_human_sub[4],dist_human_sub[5],dist_human_sub[6],\
-	dist_human_sub[7],dist_human_sub[8],dist_human_sub[9])
-anova_dist_ang = stats.f_oneway(angular_dist_human_sub[0],angular_dist_human_sub[1],angular_dist_human_sub[2],\
-	angular_dist_human_sub[3],angular_dist_human_sub[4],angular_dist_human_sub[5],angular_dist_human_sub[6],\
-	angular_dist_human_sub[7],angular_dist_human_sub[8],angular_dist_human_sub[9])
+	dist_human_sub[7]) 
 
-print('ANOVA test - Significant difference if p < 0.05 - Subjects/Human')
-print("p for linear dist: ",anova_dist)
-print("p for angular dist: ",anova_dist_ang)
 
+ind0 = np.where(angular_dist_human_sub[0] != 0)
+ind1 = np.where(angular_dist_human_sub[1] != 0)
+ind2 = np.where(angular_dist_human_sub[2] != 0)
+ind3 = np.where(angular_dist_human_sub[3] != 0)
+ind4 = np.where(angular_dist_human_sub[4] != 0)
+ind5 = np.where(angular_dist_human_sub[5] != 0)
+ind6 = np.where(angular_dist_human_sub[6] != 0)
+ind7 = np.where(angular_dist_human_sub[7] != 0)
+ind8 = np.where(angular_dist_human_sub[8] != 0)
+ind9 = np.where(angular_dist_human_sub[9] != 0)
+
+kruskal_dist_ang = stats.kruskal(angular_dist_ddp[ind],angular_dist_human_sub[2][ind2],\
+	angular_dist_human_sub[3][ind3],angular_dist_human_sub[4][ind4],angular_dist_human_sub[5][ind5],angular_dist_human_sub[6][ind6],\
+	angular_dist_human_sub[7][ind7])
+# kruskal_dist = stats.kruskal(dist_human_sub[0],dist_human_sub[1],dist_human_sub[2],\
+# 	dist_human_sub[3],dist_human_sub[4],dist_human_sub[5],dist_human_sub[6],\
+# 	dist_human_sub[7],dist_human_sub[8],dist_human_sub[9])
+# kruskal_dist_ang = stats.kruskal(angular_dist_human_sub[0][ind0],angular_dist_human_sub[1][ind1],angular_dist_human_sub[2][ind2],\
+# 	angular_dist_human_sub[3][ind3],angular_dist_human_sub[4][ind4],angular_dist_human_sub[5][ind5],angular_dist_human_sub[6][ind6],\
+# 	angular_dist_human_sub[7][ind7],angular_dist_human_sub[8][ind8],angular_dist_human_sub[9][ind9])
+
+print('Kruskal test - Significant difference if p < 0.05 - Subjects/Human')
+print("p for linear dist: ",kruskal_dist)
+print("p for angular dist: ",kruskal_dist_ang)
+
+# for k in range(10):
+# 	for i in range(k,10):
+# 		if (k != i):
+# 			print(k,i)
+# 			test = stats.mannwhitneyu(dist_human_sub[k], dist_human_sub[i])
+# 			print(test)
 
 # BOX PLOT ######################################################################
 print("-------------------------------------------------------------------")
 
-# ind = np.where(angular_dist_ddp != 0)
-# # plt.subplot(1,3,1)
-# # plt.boxplot([dist_human])
-# # plt.ylim(0, 0.2)
-# # plt.title('Human')
-# plt.subplot(1,2,1)
-# plt.boxplot([dist_ddp])
-# plt.ylim(0, 0.2)
-# # plt.ylim(0, 14)
-# plt.title('d_xy (m)')
-# plt.subplot(1,2,2)
-# plt.boxplot([angular_dist_ddp[ind]])
-# # plt.ylim(0, 14)
-# plt.title('d_theta (rad)')
-
-# plt.show()
-
-# plt.boxplot([dist_human])
-# plt.title('d_xy (m) human')
-
-# plt.show()
-
-# plt.subplot(2,2,1)
-# plt.boxplot([dist_ddp_ori[0]])
-# plt.ylim(0, 0.2)
-# plt.title('d_xy (m), theta_0 = pi/2 rad)')
-# plt.subplot(2,2,2)
-# plt.boxplot([dist_ddp_ori[1]])
-# plt.ylim(0, 0.2)
-# plt.title('d_xy (m), theta_0 = 0 rad')
-# plt.subplot(2,2,3)
-# plt.boxplot([dist_ddp_ori[2]])
-# plt.ylim(0, 0.2)
-# plt.title('d_xy (m), theta_0 = -pi/2 rad')
-# plt.subplot(2,2,4)
-# plt.boxplot([dist_ddp_ori[3]])
-# plt.ylim(0, 0.2)
-# plt.title('d_xy (m), theta_0 = pi rad')
-# plt.show()
 
 
-# plt.subplot(1,2,1)
-# plt.boxplot([dist_ddp_inf])
-# plt.ylim(0, 0.2)
-# plt.title('d_xy (m), d < 3 m')
-# plt.subplot(1,2,2)
-# plt.boxplot([dist_ddp_sup])
-# plt.ylim(0, 0.2)
-# plt.title('d_xy (m), d > 3 m')
+ind = np.where(angular_dist_ddp != 0)
+ind_human = np.where(angular_dist_human != 0)
+plt.subplot(2,2,1)
+plt.boxplot([dist_ddp])
+plt.ylim(0, 0.52)
+plt.title('d_xy (m)')
+plt.subplot(2,2,2)
+plt.boxplot([dist_human])
+plt.title('d_xy (m) human')
+plt.ylim(0, 0.52)
+plt.subplot(2,2,3)
+plt.boxplot([angular_dist_ddp[ind]])
+plt.ylim(0, 1.05)
+plt.title('d_eta (rad)')
+plt.subplot(2,2,4)
+plt.boxplot([angular_dist_human[ind_human]])
+plt.ylim(0, 1.05)
+plt.title('d_eta (rad) human')
 
-# plt.show()
+plt.show()
+
+
+plt.subplot(2,2,1)
+plt.boxplot([dist_ddp_ori[0]])
+plt.ylim(0, 0.2)
+plt.title('d_xy (m), theta_0 = pi/2 rad)')
+plt.subplot(2,2,2)
+plt.boxplot([dist_ddp_ori[1]])
+plt.ylim(0, 0.2)
+plt.title('d_xy (m), theta_0 = 0 rad')
+plt.subplot(2,2,3)
+plt.boxplot([dist_ddp_ori[2]])
+plt.ylim(0, 0.2)
+plt.title('d_xy (m), theta_0 = -pi/2 rad')
+plt.subplot(2,2,4)
+plt.boxplot([dist_ddp_ori[3]])
+plt.ylim(0, 0.2)
+plt.title('d_xy (m), theta_0 = pi rad')
+plt.show()
+
+
+plt.subplot(1,2,1)
+plt.boxplot([dist_ddp_inf])
+plt.ylim(0, 0.2)
+plt.title('d_xy (m), d < 3 m')
+plt.subplot(1,2,2)
+plt.boxplot([dist_ddp_sup])
+plt.ylim(0, 0.2)
+plt.title('d_xy (m), d > 3 m')
+
+plt.show()

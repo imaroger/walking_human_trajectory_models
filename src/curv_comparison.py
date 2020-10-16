@@ -18,9 +18,6 @@ def readModel(path,time):
 	theta = curv[2]
 	time_model = np.linspace(0,length,len(x))
 
-	# v_norm = np.sqrt((np.diff(x)/0.1)**2+(np.diff(y)/0.1)**2)
-	# print(v_norm[-1])
-
 	okay = np.where(np.abs(np.diff(x)) + np.abs(np.diff(y)) > 0)
 	x = x[okay]
 	y = y[okay]
@@ -31,19 +28,33 @@ def readModel(path,time):
 
 	theta = np.interp(time,time_model,theta)
 
-	return (x,y,theta)
+	delta_y = np.diff(y)
+	delta_x = np.diff(x)	
+	th_local = []
+	for i in range (len(delta_x)):
+		phi = atan2(delta_y[i],delta_x[i])
+		th_local.append(phi-theta[i])
+	return (x,y,th_local,theta)
 
 def distanceBetweenCurvs(x_real,x_sim,y_real,y_sim):
 	distance = 0
 	length = len(x_real)
 
 	distance_fin = np.sqrt((x_sim[-1]-x_real[-1])**2+(y_sim[-1]-y_real[-1])**2)
+	
+	okay = np.where(np.abs(np.diff(x_real)) + np.abs(np.diff(y_real)) > 0)
+	x_real = x_real[okay]
+	y_real = y_real[okay]
+	tck, u = splprep([x_real, y_real], s=0)
+	unew = np.linspace(0,1,length)
+	data = splev(unew, tck)
+	x_real,y_real = data[0],data[1]
 
 	for i in range (length):
 		distance += np.sqrt((x_sim[i]-x_real[i])**2+(y_sim[i]-y_real[i])**2)
-	# 	if i%25 == 0
-	# 		print(i, "sim",x_sim[i],y_sim[i])
-	# 		print(np.sqrt((x_sim[i]-x_real[i])**2+(y_sim[i]-y_real[i])**2))
+	# 	if i%25 == 0:
+	# 		# print(i, "sim",x_sim[i],y_sim[i])
+	# 		# print(np.sqrt((x_sim[i]-x_real[i])**2+(y_sim[i]-y_real[i])**2))
 	# 		plt.plot([x_sim[i],x_real[i]], [y_sim[i],y_real[i]], color = 'black', linewidth = 0.5)
 	# # 	# print(distance)	 	
 	# plt.plot(x_sim,y_sim,color='blue')
@@ -51,7 +62,7 @@ def distanceBetweenCurvs(x_real,x_sim,y_real,y_sim):
 	# plt.plot(x_sim, y_sim,color='cyan',linestyle=':', marker='o')
 	# plt.plot(x_real, y_real,color='orange',linestyle=':', marker='o')	
 	# plt.show()		
-	# print("dist_i :",distance/500)		
+	# # print("dist_i :",distance/500)		
 	return distance/length,distance_fin	
 
 def normalizeAngle(angle): 
@@ -64,14 +75,20 @@ def normalizeAngle(angle):
 
 def angularDistanceBetweenCurvs(th_real,th_sim):
 	distance = 0	
-
 	distance_fin = abs(pi/2-normalizeAngle(th_sim[-1]))
 
-	for i in range (len(th_real)):
+
+	for i in range (len(th_real)-1):
 		distance += abs(normalizeAngle(th_real[i])-normalizeAngle(th_sim[i]))
-		# if i%50 == 0:
-		# 	print(distance,th_real[i],th_sim[i])
-	return distance/len(th_real),distance_fin
+	# 	print(abs(th_real[i]-th_sim[i]))
+	# 	plt.plot([time[i],time[i]], [th_real[i],th_sim[i]], color = 'black', linewidth = 0.5)
+
+	# plt.plot(time,th_real,linestyle=':', marker='o')
+	# plt.plot(time,th_sim,linestyle=':', marker='o')
+	# print("--------",distance/len(th_real))
+	# plt.show()
+
+	return distance/len(th_sim),distance_fin
 
 #########################################################################################
 ################################## MAIN #################################################
@@ -127,48 +144,17 @@ dist_subjects_ddp_list , angular_dist_subjects_ddp_list = [],[]
 for i in range (len(path_human_list)):	
 	title = path_human_list[i][11:17]
 	#print(title)
-	# ax = plt.subplot(1,4,count)
+	#ax = plt.subplot(1,4,count)
 
 	ax = plt.subplot(4,10,count)
 
-	# if title == 'E1540.' or title == 'N-0615' or title == 'S4015.' or title == 'O0640.':
-	
+	#if title == 'E1540.' or title == 'N-0615' or title == 'S4015.' or title == 'O0640.':
+		
 	print(title,i,count)		
 
 	human_data = np.loadtxt(path_human_list[i])
 	# (x_clothoid,y_clothoid,theta_clothoid) = readModel(path_clothoid_list[i],time)
-	(x_ddp,y_ddp,theta_ddp) = readModel(path_ddp_list[i],time)	
-
-	# v = np.sqrt(human_data[2]**2+human_data[3]**2)
-	# ind_begin = np.where(v[:2*len(v)/10] > 0.2)
-	# ind_end= np.where(v[8*len(v)/10:] < 0.2)
-	# if len(ind_begin[0]) != 0 and len(ind_end[0]) != 0:
-	# 	begin = ind_begin[0][0]
-	# 	end = 8*len(v)/10+ind_end[0][0]
-	# elif len(ind_begin[0]) == 0:
-	# 	begin = 2*len(v)/10
-	# 	if len(ind_end[0]) == 0:
-	# 		end = len(v)-1
-	# 	else :
-	# 		end = 8*len(v)/10+ind_end[0][0]
-	# else:
-	# 	end = len(v)-1
-	# 	begin = ind_begin[0][0]
-
-	# if np.sum(human_data[5]) != 0:
-	# 	theta_trunc = human_data[5][begin:end]
-	# 	okay = np.where(np.abs(np.diff(theta_trunc)) > 0)
-	# 	theta_trunc = theta_trunc[okay]		
-	# 	print(len(theta_trunc))
-	# 	tck, u = splprep([theta_trunc], s=0)
-	# 	unew = np.linspace(0,1,len(human_data[5]))
-	# 	data = splev(unew, tck)	
-	# 	human_data[5] = data[0]
-	# human_data[5] = np.interp(time,np.linspace(0,100,len(theta_trunc)),theta_trunc)
-
-	# plt.plot(x_clothoid,y_clothoid,label='Clothoid',color='red',linewidth=1.5)
-	# # plt.arrow(x_clothoid[-1], y_clothoid[-1], np.cos(theta_clothoid[-1]) * 0.1, np.sin(theta_clothoid[-1]) * 0.1, head_width=.05)
-	# # plt.arrow(x_clothoid[0], y_clothoid[0], np.cos(theta_clothoid[0]) * 0.1, np.sin(theta_clothoid[0]) * 0.1, head_width=.05)
+	(x_ddp,y_ddp,theta_local_ddp,theta_global_ddp) = readModel(path_ddp_list[i],time)	
 
 	plt.plot(x_ddp,y_ddp,label='OC',color='red',linewidth=1.5)	
 	
@@ -189,8 +175,9 @@ for i in range (len(path_human_list)):
 		for i in range (len(human_data[0])):
 			if i%50 == 0:
 				plt.arrow(human_data[0][i], human_data[1][i], np.cos(human_data[5][i])*arrow_len, np.sin(human_data[5][i])*arrow_len, head_width=.03,color='green')
-				plt.arrow(x_ddp[i], y_ddp[i], np.cos(theta_ddp[i])*arrow_len, np.sin(theta_ddp[i])*arrow_len, head_width=.03,color='red')
-	plt.arrow(x_ddp[-1], y_ddp[-1], np.cos(theta_ddp[-1])*arrow_len, np.sin(theta_ddp[-1])*arrow_len, head_width=.03,color='red')
+				plt.arrow(x_ddp[i], y_ddp[i], np.cos(theta_global_ddp[i])*arrow_len, np.sin(theta_global_ddp[i])*arrow_len, head_width=.03,color='red')
+	plt.arrow(x_ddp[-1], y_ddp[-1], np.cos(theta_global_ddp[-1])*arrow_len, np.sin(theta_global_ddp[-1])*arrow_len, head_width=.03,color='red')
+	
 	# plt.plot(time,v,color='orange')
 	# plt.plot([time[end]]*len(time),np.linspace(0,6,len(time)),color ='black')
 	# plt.plot([time[begin]]*len(time),np.linspace(0,6,len(time)),color ='black')	
@@ -222,7 +209,7 @@ for i in range (len(path_human_list)):
 	if np.sum(human_data[5]) != 0:
 		print("yes")
 		# angular_dist_clotho = angularDistanceBetweenCurvs(human_data[5],theta_clothoid)
-		angular_dist_ddp,angular_dist_fin_ddp = angularDistanceBetweenCurvs(human_data[5],theta_ddp)
+		angular_dist_ddp,angular_dist_fin_ddp = angularDistanceBetweenCurvs(human_data[4],theta_local_ddp)
 	else:
 		# angular_dist_clotho = 0
 		angular_dist_ddp,angular_dist_fin_ddp = 0,0				
@@ -234,8 +221,8 @@ for i in range (len(path_human_list)):
 
 	#print(i,path_human_list[i][62:68],dist_clotho,dist_ddp)
 	# plt.legend(fontsize = 'xx-large')	
-	plt.title(title)
-	# plt.title("d_xy = " + str(floor(dist_ddp*10000)/10000) + " & d_theta = "+str(floor(angular_dist_ddp*10000)/10000))
+	# plt.title(title)
+	plt.title("d_xy = " + str(floor(dist_ddp*10000)/10000) + " & d_eta = "+str(floor(angular_dist_ddp*10000)/10000), fontsize=18)
 
 	# plt.title('clotho :'+str(floor(angular_dist_clotho*100)/100) + \
 	# ' VS ddp :'+str(floor(angular_dist_ddp*100)/100))
@@ -247,7 +234,7 @@ for i in range (len(path_human_list)):
 	# ax.set_yticklabels([])
 	plt.ylabel("y (m)")
 	plt.xlabel("x (m)")	
-	# if count < 4:
+	#if count < 4:
 	count += 1
 plt.show()
 
