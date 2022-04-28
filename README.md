@@ -5,14 +5,20 @@
 
 Two human-like locomotion models are impletemented and compared in this repository : a model based on clothoid curves and an optimal control (OC) model.
 
+A video of this work is available on : <https://www.youtube.com/watch?v=ZmAJzs6VDlw>
+
 To cite this work in your academic research, please use the following bibtex lines:
 ```bibtex
-@inproceedings{maroger20IROS,
-  author={Maroger, Isabelle and Stasse, Olivier and Watier, Bruno},
-  title={Walking Human Trajectory Models and Their Application to Humanoid Robot Locomotion},
-  booktitle = {2020 IEEE/RSJ International Conference on Inteligent Robots and Systems (IROS)},
-  year={2020}
-}
+@INPROCEEDINGS{maroger2020IROS,
+  author={Maroger, I. and Stasse, O. and Watier, B.},
+  booktitle={2020 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)}, 
+  title={Walking Human Trajectory Models and Their Application to Humanoid Robot Locomotion}, 
+  year={2020},
+  volume={},
+  number={},
+  pages={3465-3472},
+  doi={10.1109/IROS45743.2020.9341118}}
+
 ```
 
 ## Optimization of the OC model
@@ -21,12 +27,16 @@ An Inverse Optimal Control (IOC) scheme is implemented in this repository. It ai
 
 To cite this work in your academic research, please use the following bibtex lines:
 ```bibtex
-@inproceedings{maroger21,
-  author={Maroger, Isabelle and Stasse, Olivier and Watier, Bruno},
-  title={Inverse Optimal Control to Model Human Trajectories During Gait},
-  booktitle = {submitted},
-  year={2021}
-}
+@article{maroger2021CMBBE,
+author = {Isabelle Maroger and Olivier Stasse and Bruno Watier},
+title = {Inverse optimal control to model human trajectories during locomotion},
+journal = {Computer Methods in Biomechanics and Biomedical Engineering},
+volume = {25},
+number = {5},
+pages = {499-511},
+year  = {2022},
+publisher = {Taylor & Francis},
+doi = {10.1080/10255842.2021.1962311}}
 ```
 
 ## Installation
